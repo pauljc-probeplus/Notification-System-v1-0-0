@@ -1,0 +1,10 @@
+basePath: /api/v1
+host: localhost:4001
+info:
+  contact:
+    name: Paul
+  description: API docs for Notification System
+  title: Notification System API
+  version: "1.0"
+paths: {}
+swagger: "2.0"

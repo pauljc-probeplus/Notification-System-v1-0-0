@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"github.com/pauljc-probeplus/Notification-System-v1-0-0/internal/notification"
+	"notification-system/internal/notification/model"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -16,7 +16,7 @@ type notificationRepo struct {
 
 func NewNotificationRepository(db *mongo.Database) NotificationRepository {
 	return &notificationRepo{
-		coll: db.Collection("notifications"),
+		coll: db.Collection("Notifications"),
 	}
 }
 

@@ -1,0 +1,14 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API docs for Notification System",
+        "title": "Notification System API",
+        "contact": {
+            "name": "Paul"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:4001",
+    "basePath": "/api/v1",
+    "paths": {}
+}

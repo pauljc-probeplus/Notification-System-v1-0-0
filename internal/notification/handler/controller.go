@@ -2,8 +2,8 @@ package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/pauljc-probeplus/Notification-System-v1-0-0/internal/notification"
-	"github.com/pauljc-probeplus/Notification-System-v1-0-0/internal/notification/service"
+	"notification-system/internal/notification/model"
+	"notification-system/internal/notification/service"
 )
 
 type NotificationHandler struct {
@@ -13,6 +13,9 @@ type NotificationHandler struct {
 func NewNotificationHandler(svc service.NotificationService) *NotificationHandler {
 	return &NotificationHandler{svc: svc}
 }
+
+
+
 
 func (h *NotificationHandler) CreateNotification(c *fiber.Ctx) error {
 	var req notification.Notification

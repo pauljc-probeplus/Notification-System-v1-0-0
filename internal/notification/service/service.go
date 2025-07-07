@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"github.com/pauljc-probeplus/Notification-System-v1-0-0/internal/notification"
-	"github.com/pauljc-probeplus/Notification-System-v1-0-0/internal/notification/repository"
-	//"github.com/pauljc-probeplus/Notification-System-v1-0-0/internal/notification"
+	"notification-system/internal/notification/model"
+	"notification-system/internal/notification/repository"
+	
 )
 
 type NotificationService interface {
