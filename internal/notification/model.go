@@ -1,0 +1,22 @@
+package notification
+
+import (
+	"time"
+)
+
+type Notification struct {
+	NotificationID   string    `bson:"notification_id" json:"notification_id"`  // custom ID
+	Type             string    `bson:"type" json:"type"`                         // transactional, promotional, etc.
+	Channels         []string  `bson:"channels" json:"channels"`                // email, sms, etc.
+	UserId           string    `bson:"user_id" json:"user_id"`
+	Message          string    `bson:"message" json:"message"`
+	SendAt           string    `bson:"send_at" json:"send_at"`
+	Priority         string    `bson:"priority" json:"priority"`
+	MaximumRetries   string    `bson:"maximum_retries" json:"maximum_retries"`
+	CreatedDate      time.Time `json:"created_date" bson:"created_date"`
+	CreatedByName    string    `json:"created_by_name" bson:"created_by_name"`
+	CreatedById      string    `json:"created_by_id" bson:"created_by_id"`
+	ModifiedDate     time.Time `json:"modified_date" bson:"modified_date"`
+	ModifiedByName   string    `json:"modified_by_name" bson:"modified_by_name"`
+	ModifiedById     string    `json:"modified_by_id" bson:"modified_by_id"`
+}
