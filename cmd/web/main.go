@@ -16,6 +16,8 @@ import (
 	"notification-system/internal/config"
 	"notification-system/internal/notification/route"
 
+	userpreference "notification-system/internal/userpreference/routes"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -47,6 +49,7 @@ func main() {
 	api := app.Group("/api/v1")
 	
 	route.RegisterRoutes(api, db)
+	userpreference.RegisterRoutes(api,db)
 	app.Get("/ping", Ping)
 
 

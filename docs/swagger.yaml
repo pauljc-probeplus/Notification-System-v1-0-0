@@ -1,5 +1,8 @@
 basePath: /api/v1
 definitions:
+  fiber.Map:
+    additionalProperties: true
+    type: object
   notification-system_internal_notification_model.Notification:
     properties:
       channels:
@@ -37,6 +40,84 @@ definitions:
         description: transactional, promotional, etc.
         type: string
       user_id:
+        type: string
+    type: object
+  notification-system_internal_userpreference_model.Channel:
+    properties:
+      promotional:
+        items:
+          type: string
+        type: array
+      system_alerts:
+        items:
+          type: string
+        type: array
+      transactional:
+        items:
+          type: string
+        type: array
+    type: object
+  notification-system_internal_userpreference_model.DailyLimit:
+    properties:
+      promotional_limit:
+        type: string
+      promotional_sent_today:
+        type: string
+    type: object
+  notification-system_internal_userpreference_model.DeliveryTime:
+    properties:
+      enabled:
+        type: boolean
+      end_time:
+        type: string
+      start_time:
+        type: string
+      time_zone:
+        type: string
+    type: object
+  notification-system_internal_userpreference_model.NoDisturb:
+    properties:
+      enabled:
+        type: boolean
+      end_date_time:
+        type: string
+      start_date_time:
+        type: string
+      time_zone:
+        type: string
+    type: object
+  notification-system_internal_userpreference_model.Preference:
+    properties:
+      channels:
+        $ref: '#/definitions/notification-system_internal_userpreference_model.Channel'
+      daily_limit_details:
+        $ref: '#/definitions/notification-system_internal_userpreference_model.DailyLimit'
+      delivery_time:
+        $ref: '#/definitions/notification-system_internal_userpreference_model.DeliveryTime'
+      no_disturb_details:
+        $ref: '#/definitions/notification-system_internal_userpreference_model.NoDisturb'
+    type: object
+  notification-system_internal_userpreference_model.UserPreference:
+    properties:
+      created_by_id:
+        type: string
+      created_by_name:
+        type: string
+      created_date:
+        type: string
+      modified_by_id:
+        type: string
+      modified_by_name:
+        type: string
+      modified_date:
+        type: string
+      preferences:
+        $ref: '#/definitions/notification-system_internal_userpreference_model.Preference'
+      user_id:
+        type: string
+      user_preference_id:
+        type: string
+      version:
         type: string
     type: object
 host: localhost:4001
@@ -101,4 +182,69 @@ paths:
       summary: Test
       tags:
       - test
+  /user-preferences:
+    post:
+      consumes:
+      - application/json
+      description: Stores user preferences for a given user
+      parameters:
+      - description: User Preference
+        in: body
+        name: user_preference
+        required: true
+        schema:
+          $ref: '#/definitions/notification-system_internal_userpreference_model.UserPreference'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/fiber.Map'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/fiber.Map'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/fiber.Map'
+      summary: Create user preference
+      tags:
+      - user-preferences
+  /user-preferences/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update an existing user preference by ID
+      parameters:
+      - description: User Preference ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User Preference Payload
+        in: body
+        name: userPreference
+        required: true
+        schema:
+          $ref: '#/definitions/notification-system_internal_userpreference_model.UserPreference'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/fiber.Map'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/fiber.Map'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/fiber.Map'
+      summary: Update user preferences
+      tags:
+      - user-preferences
 swagger: "2.0"

@@ -100,9 +100,112 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/user-preferences": {
+            "post": {
+                "description": "Stores user preferences for a given user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user-preferences"
+                ],
+                "summary": "Create user preference",
+                "parameters": [
+                    {
+                        "description": "User Preference",
+                        "name": "user_preference",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/notification-system_internal_userpreference_model.UserPreference"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Map"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Map"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Map"
+                        }
+                    }
+                }
+            }
+        },
+        "/user-preferences/{id}": {
+            "put": {
+                "description": "Update an existing user preference by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user-preferences"
+                ],
+                "summary": "Update user preferences",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User Preference ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "User Preference Payload",
+                        "name": "userPreference",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/notification-system_internal_userpreference_model.UserPreference"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Map"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Map"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Map"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "fiber.Map": {
+            "type": "object",
+            "additionalProperties": true
+        },
         "notification-system_internal_notification_model.Notification": {
             "type": "object",
             "properties": {
@@ -153,6 +256,126 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "notification-system_internal_userpreference_model.Channel": {
+            "type": "object",
+            "properties": {
+                "promotional": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "system_alerts": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "transactional": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "notification-system_internal_userpreference_model.DailyLimit": {
+            "type": "object",
+            "properties": {
+                "promotional_limit": {
+                    "type": "string"
+                },
+                "promotional_sent_today": {
+                    "type": "string"
+                }
+            }
+        },
+        "notification-system_internal_userpreference_model.DeliveryTime": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "time_zone": {
+                    "type": "string"
+                }
+            }
+        },
+        "notification-system_internal_userpreference_model.NoDisturb": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "end_date_time": {
+                    "type": "string"
+                },
+                "start_date_time": {
+                    "type": "string"
+                },
+                "time_zone": {
+                    "type": "string"
+                }
+            }
+        },
+        "notification-system_internal_userpreference_model.Preference": {
+            "type": "object",
+            "properties": {
+                "channels": {
+                    "$ref": "#/definitions/notification-system_internal_userpreference_model.Channel"
+                },
+                "daily_limit_details": {
+                    "$ref": "#/definitions/notification-system_internal_userpreference_model.DailyLimit"
+                },
+                "delivery_time": {
+                    "$ref": "#/definitions/notification-system_internal_userpreference_model.DeliveryTime"
+                },
+                "no_disturb_details": {
+                    "$ref": "#/definitions/notification-system_internal_userpreference_model.NoDisturb"
+                }
+            }
+        },
+        "notification-system_internal_userpreference_model.UserPreference": {
+            "type": "object",
+            "properties": {
+                "created_by_id": {
+                    "type": "string"
+                },
+                "created_by_name": {
+                    "type": "string"
+                },
+                "created_date": {
+                    "type": "string"
+                },
+                "modified_by_id": {
+                    "type": "string"
+                },
+                "modified_by_name": {
+                    "type": "string"
+                },
+                "modified_date": {
+                    "type": "string"
+                },
+                "preferences": {
+                    "$ref": "#/definitions/notification-system_internal_userpreference_model.Preference"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "user_preference_id": {
+                    "type": "string"
+                },
+                "version": {
                     "type": "string"
                 }
             }
