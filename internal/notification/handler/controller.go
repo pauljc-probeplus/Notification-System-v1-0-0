@@ -15,10 +15,29 @@ func NewNotificationHandler(svc service.NotificationService) *NotificationHandle
 }
 
 
+// Test godoc
+// @Summary Test
+// @Description Dummy route
+// @Tags test
+// @Success 200 {string} string "test"
+// @Router /test [get]
+func (c *NotificationHandler) Test(ctx *fiber.Ctx) error {
+	return ctx.SendString("test")
+}
 
 
+
+// CreateNotification godoc
+// @Summary Create a new notification
+// @Description Create a notification and store it in MongoDB
+// @Tags notifications
+// @Accept json
+// @Produce json
+// @Param notification body model.Notification true "Notification payload"
+// @Success 201 {object} model.Notification
+// @Router  /notifications [post]
 func (h *NotificationHandler) CreateNotification(c *fiber.Ctx) error {
-	var req notification.Notification
+	var req model.Notification
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid payload"})
 	}
@@ -29,4 +48,13 @@ func (h *NotificationHandler) CreateNotification(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "notification created"})
+}
+
+// Dummy godoc
+// @Summary Dummy check
+// @Tags debug
+// @Success 200 {string} string "ok"
+// @Router /debug [get]
+func Dummy(ctx *fiber.Ctx) error {
+	return ctx.SendString("ok")
 }

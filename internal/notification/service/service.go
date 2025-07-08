@@ -8,7 +8,7 @@ import (
 )
 
 type NotificationService interface {
-	CreateNotification(ctx context.Context, n *notification.Notification) error
+	CreateNotification(ctx context.Context, n *model.Notification) error
 }
 
 type notificationService struct {
@@ -19,7 +19,7 @@ func NewNotificationService(repo repository.NotificationRepository) Notification
 	return &notificationService{repo: repo}
 }
 
-func (s *notificationService) CreateNotification(ctx context.Context, n *notification.Notification) error {
+func (s *notificationService) CreateNotification(ctx context.Context, n *model.Notification) error {
 	// TODO: Add business logic for DND, limits, etc later
 	return s.repo.Create(ctx, n)
 }

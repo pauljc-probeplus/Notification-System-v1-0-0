@@ -7,7 +7,7 @@ import (
 )
 
 type NotificationRepository interface {
-	Create(ctx context.Context, n *notification.Notification) error
+	Create(ctx context.Context, n *model.Notification) error
 }
 
 type notificationRepo struct {
@@ -20,7 +20,7 @@ func NewNotificationRepository(db *mongo.Database) NotificationRepository {
 	}
 }
 
-func (r *notificationRepo) Create(ctx context.Context, n *notification.Notification) error {
+func (r *notificationRepo) Create(ctx context.Context, n *model.Notification) error {
 	_, err := r.coll.InsertOne(ctx, n)
 	return err
 }

@@ -9,11 +9,12 @@ import (
 	//fiberSwagger "github.com/swaggo/fiber-swagger"  // alias to use in code
 	//swaggerFiles "github.com/swaggo/files"          // Swagger UI assets
 	_ "notification-system/docs"
+	_ "notification-system/internal/notification/handler"
 
 	"github.com/gofiber/swagger"
 
 	"notification-system/internal/config"
-	"notification-system/internal/notification"
+	"notification-system/internal/notification/route"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -34,18 +35,18 @@ func main() {
 	app := fiber.New()
 
 	// Swagger Setup (new method)
-	swaggerHandler:= swagger.New(swagger.Config{
-		URL: "http://localhost:4001/swagger/doc.json",
-	})
+	// swaggerHandler:= swagger.New(swagger.Config{
+	// 	URL: "http://localhost:4001/swagger/doc.json",
+	// })
 	// if err != nil {
 	// 	log.Fatalf("Swagger setup failed: %v", err)
 	// }
-	app.Get("/swagger/*", swaggerHandler)
+	app.Get("/swagger/*", swagger.New())
 
 	// 3. Register Routes
 	api := app.Group("/api/v1")
 	
-	notification.RegisterRoutes(api, db)
+	route.RegisterRoutes(api, db)
 	app.Get("/ping", Ping)
 
 

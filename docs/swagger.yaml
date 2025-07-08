@@ -1,4 +1,44 @@
 basePath: /api/v1
+definitions:
+  notification-system_internal_notification_model.Notification:
+    properties:
+      channels:
+        description: email, sms, etc.
+        items:
+          type: string
+        type: array
+      created_by_id:
+        type: string
+      created_by_name:
+        type: string
+      created_date:
+        description: |-
+          CreatedDate is the time the notification was created
+          example: 2025-07-08T14:00:00Z
+        type: string
+      maximum_retries:
+        type: string
+      message:
+        type: string
+      modified_by_id:
+        type: string
+      modified_by_name:
+        type: string
+      modified_date:
+        type: string
+      notification_id:
+        description: custom ID
+        type: string
+      priority:
+        type: string
+      send_at:
+        type: string
+      type:
+        description: transactional, promotional, etc.
+        type: string
+      user_id:
+        type: string
+    type: object
 host: localhost:4001
 info:
   contact:
@@ -6,5 +46,59 @@ info:
   description: API docs for Notification System
   title: Notification System API
   version: "1.0"
-paths: {}
+paths:
+  /debug:
+    get:
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: Dummy check
+      tags:
+      - debug
+  /notifications:
+    post:
+      consumes:
+      - application/json
+      description: Create a notification and store it in MongoDB
+      parameters:
+      - description: Notification payload
+        in: body
+        name: notification
+        required: true
+        schema:
+          $ref: '#/definitions/notification-system_internal_notification_model.Notification'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/notification-system_internal_notification_model.Notification'
+      summary: Create a new notification
+      tags:
+      - notifications
+  /ping:
+    get:
+      description: Just ping
+      responses:
+        "200":
+          description: pong
+          schema:
+            type: string
+      summary: Ping test
+      tags:
+      - test
+  /test:
+    get:
+      description: Dummy route
+      responses:
+        "200":
+          description: test
+          schema:
+            type: string
+      summary: Test
+      tags:
+      - test
 swagger: "2.0"

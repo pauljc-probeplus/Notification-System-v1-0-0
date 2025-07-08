@@ -1,4 +1,4 @@
-package notification
+package route
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -8,13 +8,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// @title Notification System Routes
+// @description All routes for notification APIs
 func RegisterRoutes(app fiber.Router, db *mongo.Database) {
 	repo := repository.NewNotificationRepository(db)
 	svc := service.NewNotificationService(repo)
-	handlerInstance := handler.NewNotificationHandler(svc)
+	handler := handler.NewNotificationHandler(svc)
 
-	handler.H=handlerInstance
+	//handler.H=handlerInstance
 
-	notificationGroup := app.Group("/notifications")
-	notificationGroup.Post("/", handler.CreateNotification)
+	// notificationGroup := app.Group("/notifications")
+	// notificationGroup.Post("/", handler.CreateNotification)
+
+	app.Post("/notifications", handler.CreateNotification)
 }

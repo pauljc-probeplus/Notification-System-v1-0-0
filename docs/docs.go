@@ -16,7 +16,148 @@ const docTemplate = `{
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {}
+    "paths": {
+        "/debug": {
+            "get": {
+                "tags": [
+                    "debug"
+                ],
+                "summary": "Dummy check",
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/notifications": {
+            "post": {
+                "description": "Create a notification and store it in MongoDB",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Create a new notification",
+                "parameters": [
+                    {
+                        "description": "Notification payload",
+                        "name": "notification",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/notification-system_internal_notification_model.Notification"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/notification-system_internal_notification_model.Notification"
+                        }
+                    }
+                }
+            }
+        },
+        "/ping": {
+            "get": {
+                "description": "Just ping",
+                "tags": [
+                    "test"
+                ],
+                "summary": "Ping test",
+                "responses": {
+                    "200": {
+                        "description": "pong",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/test": {
+            "get": {
+                "description": "Dummy route",
+                "tags": [
+                    "test"
+                ],
+                "summary": "Test",
+                "responses": {
+                    "200": {
+                        "description": "test",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "notification-system_internal_notification_model.Notification": {
+            "type": "object",
+            "properties": {
+                "channels": {
+                    "description": "email, sms, etc.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "created_by_id": {
+                    "type": "string"
+                },
+                "created_by_name": {
+                    "type": "string"
+                },
+                "created_date": {
+                    "description": "CreatedDate is the time the notification was created\nexample: 2025-07-08T14:00:00Z",
+                    "type": "string"
+                },
+                "maximum_retries": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "modified_by_id": {
+                    "type": "string"
+                },
+                "modified_by_name": {
+                    "type": "string"
+                },
+                "modified_date": {
+                    "type": "string"
+                },
+                "notification_id": {
+                    "description": "custom ID",
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "string"
+                },
+                "send_at": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "transactional, promotional, etc.",
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        }
+    }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
