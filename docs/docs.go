@@ -208,6 +208,10 @@ const docTemplate = `{
         },
         "notification-system_internal_notification_model.Notification": {
             "type": "object",
+            "required": [
+                "notification_id",
+                "user_id"
+            ],
             "properties": {
                 "channels": {
                     "description": "email, sms, etc.",
@@ -347,6 +351,9 @@ const docTemplate = `{
         },
         "notification-system_internal_userpreference_model.UserPreference": {
             "type": "object",
+            "required": [
+                "user_id"
+            ],
             "properties": {
                 "created_by_id": {
                     "type": "string"

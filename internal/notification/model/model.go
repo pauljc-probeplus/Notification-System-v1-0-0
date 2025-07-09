@@ -7,10 +7,10 @@ import (
 // Notification represents a notification payload
 // swagger:model
 type Notification struct {
-	NotificationID   string    `bson:"notification_id" json:"notification_id"`  // custom ID
+	NotificationID   string    `bson:"notification_id" json:"notification_id" validate:"required,notification_id_format"`  // custom ID
 	Type             string    `bson:"type" json:"type"`                         // transactional, promotional, etc.
 	Channels         []string  `bson:"channels" json:"channels"`                // email, sms, etc.
-	UserId           string    `bson:"user_id" json:"user_id"`
+	UserId           string    `bson:"user_id" json:"user_id"  validate:"required,user_id_format"`
 	Message          string    `bson:"message" json:"message"`
 	SendAt           string    `bson:"send_at" json:"send_at"`
 	Priority         string    `bson:"priority" json:"priority"`

@@ -18,6 +18,8 @@ import (
 
 	userpreference "notification-system/internal/userpreference/routes"
 
+	"notification-system/internal/validation"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -32,6 +34,9 @@ func main() {
 	// 1. Init MongoDB
 	mongoURI := "mongodb://localhost:27017"
 	db := config.InitMongoDB(mongoURI)
+
+	// Validation checks
+	validation.InitValidator()
 
 	// 2. Init Fiber App
 	app := fiber.New()

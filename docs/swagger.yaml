@@ -41,6 +41,9 @@ definitions:
         type: string
       user_id:
         type: string
+    required:
+    - notification_id
+    - user_id
     type: object
   notification-system_internal_userpreference_model.Channel:
     properties:
@@ -119,6 +122,8 @@ definitions:
         type: string
       version:
         type: string
+    required:
+    - user_id
     type: object
 host: localhost:4001
 info:

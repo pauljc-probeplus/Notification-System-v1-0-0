@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"notification-system/internal/notification/model"
 	"notification-system/internal/notification/service"
+	"notification-system/internal/validation"
 )
 
 type NotificationHandler struct {
@@ -42,6 +43,12 @@ func (h *NotificationHandler) CreateNotification(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid payload"})
 	}
 
+	// 🔍 Perform validation
+	if err := validation.ValidateStruct(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	// Save to DB
 	err := h.svc.CreateNotification(c.Context(), &req)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "could not create notification"})

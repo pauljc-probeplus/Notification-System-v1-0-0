@@ -3,7 +3,7 @@ package model
 type UserPreference struct {
 	UserPreferenceID string     `json:"user_preference_id" bson:"user_preference_id"`
 	Version          string     `json:"version" bson:"version"`
-	UserID           string     `json:"user_id" bson:"user_id"`
+	UserID           string     `json:"user_id" bson:"user_id"  validate:"required,user_id_format"`
 	Preferences      Preference `json:"preferences" bson:"preferences"`
 
 	CreatedDate   string `json:"created_date" bson:"created_date"`
