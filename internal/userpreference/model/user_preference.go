@@ -1,17 +1,16 @@
 package model
 
 type UserPreference struct {
-	UserPreferenceID string     `json:"user_preference_id" bson:"user_preference_id"`
-	Version          string     `json:"version" bson:"version"`
+	UserPreferenceID string     `json:"user_preference_id" bson:"user_preference_id" validate:"required,user_preference_id_format"`
 	UserID           string     `json:"user_id" bson:"user_id"  validate:"required,user_id_format"`
 	Preferences      Preference `json:"preferences" bson:"preferences"`
 
-	CreatedDate   string `json:"created_date" bson:"created_date"`
-	CreatedByName string `json:"created_by_name" bson:"created_by_name"`
-	CreatedById   string `json:"created_by_id" bson:"created_by_id"`
-	ModifiedDate  string `json:"modified_date" bson:"modified_date"`
-	ModifiedByName string `json:"modified_by_name" bson:"modified_by_name"`
-	ModifiedById  string `json:"modified_by_id" bson:"modified_by_id"`
+	CreatedDate      string   `json:"created_date" bson:"created_date" validate:"required,datetime=2006-01-02T15:04:05Z07:00"`
+	CreatedByName    string   `json:"created_by_name" bson:"created_by_name" validate:"required"`
+	CreatedByID      string   `json:"created_by_id" bson:"created_by_id" validate:"required"`
+	ModifiedDate     string   `json:"modified_date" bson:"modified_date" validate:"required,datetime=2006-01-02T15:04:05Z07:00"`
+	ModifiedByName   string   `json:"modified_by_name" bson:"modified_by_name" validate:"required"`
+	ModifiedByID     string   `json:"modified_by_id" bson:"modified_by_id" validate:"required"`
 }
 
 type Preference struct {

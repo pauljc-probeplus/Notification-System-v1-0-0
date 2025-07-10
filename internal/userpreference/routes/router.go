@@ -17,8 +17,11 @@ func RegisterRoutes(app fiber.Router, db *mongo.Database) {
 	// prefGroup.Post("/", handler.CreateUserPreference)
 	// userPrefGroup := app.Group("/user-preferences")
 	// userPrefGroup.Put("/:id", handler.UpdateUserPreference)
+	
 
 
 	app.Post("/user-preferences", handler.CreateUserPreference)
 	app.Put("/user-preferences/:id", handler.UpdateUserPreference)
+	app.Get("/user-preferences/:id", handler.GetUserPreference)
+
 }

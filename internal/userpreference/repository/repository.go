@@ -8,12 +8,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"fmt"
+	"errors"
 
 )
 
 type UserPreferenceRepository interface {
 	Create(ctx context.Context, pref *model.UserPreference) error
 	UpdateUserPreference(ctx context.Context, updated *model.UserPreference) error
+	CountByFilter(ctx context.Context, filter bson.M) (int64, error) //get all existing user ids
+	GetUserPreference(ctx context.Context, userID string) (*model.UserPreference, error)
+
 }
 
 type userPreferenceRepo struct {
@@ -28,7 +32,15 @@ func NewUserPreferenceRepository(db *mongo.Database) UserPreferenceRepository {
 
 func (r *userPreferenceRepo) Create(ctx context.Context, pref *model.UserPreference) error {
 	_, err := r.coll.InsertOne(ctx, pref)
-	return err
+	if err != nil {
+        // Check for duplicate key error
+        if mongo.IsDuplicateKeyError(err) {
+            return errors.New("user preference already exists")
+        }
+        return err
+    }
+    return nil
+	
 }
 
 func (r *userPreferenceRepo) UpdateUserPreference(ctx context.Context, updated *model.UserPreference) error {
@@ -44,4 +56,21 @@ func (r *userPreferenceRepo) UpdateUserPreference(ctx context.Context, updated *
 		return fmt.Errorf("no preference found for user_id: %s", updated.UserID)
 	}
 	return nil
+}
+
+func (r *userPreferenceRepo) CountByFilter(ctx context.Context, filter bson.M) (int64, error) {
+	return r.coll.CountDocuments(ctx, filter)
+}
+
+func (r *userPreferenceRepo) GetUserPreference(ctx context.Context, userID string) (*model.UserPreference, error) {
+	filter := bson.M{"user_id": userID}
+	var pref model.UserPreference
+	err := r.coll.FindOne(ctx, filter).Decode(&pref)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, fmt.Errorf("no preference found for user_id: %s", userID)
+		}
+		return nil, err
+	}
+	return &pref, nil
 }

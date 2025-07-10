@@ -36,6 +36,12 @@ func InitMongoDB(uri string) *mongo.Database {
     // 🔐 Create unique index on notification_id
     ensureUniqueIndex(db, "Notifications", "notification_id")
 
+	// 🔐 Create unique index on user_preference_id
+    ensureUniqueIndex(db, "UserPreferences", "user_preference_id")
+
+	// 🔐 Create unique index on user_preference_id
+    ensureUniqueIndex(db, "UserPreferences", "user_id")
+
     return db
 }
 
@@ -52,4 +58,6 @@ func ensureUniqueIndex(db *mongo.Database, collectionName, field string) {
     }
     log.Printf("✅ Unique index ensured on %s.%s\n", collectionName, field)
 }
+
+
 

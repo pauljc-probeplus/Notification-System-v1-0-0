@@ -5,6 +5,7 @@ import (
 	"notification-system/internal/notification/model"
 	"notification-system/internal/notification/service"
 	"notification-system/internal/validation"
+	"time"
 )
 
 type NotificationHandler struct {
@@ -43,6 +44,15 @@ func (h *NotificationHandler) CreateNotification(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid payload"})
 	}
 
+	// Apply default values
+	currentTime := time.Now().UTC().Format(time.RFC3339)
+	req.CreatedDate = currentTime
+	req.ModifiedDate = currentTime
+	req.CreatedByName = req.UserId
+	req.CreatedByID = req.UserId
+	req.ModifiedByName = req.UserId
+	req.ModifiedByID = req.UserId
+	
 	// 🔍 Perform validation
 	if err := validation.ValidateStruct(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})

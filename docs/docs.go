@@ -147,7 +147,46 @@ const docTemplate = `{
                 }
             }
         },
-        "/user-preferences/{id}": {
+        "/user-preferences/{user_id}": {
+            "get": {
+                "description": "Fetch user preference by user ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user-preferences"
+                ],
+                "summary": "Get user preference",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/notification-system_internal_userpreference_model.UserPreference"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Map"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/fiber.Map"
+                        }
+                    }
+                }
+            },
             "put": {
                 "description": "Update an existing user preference by ID",
                 "consumes": [
@@ -209,7 +248,19 @@ const docTemplate = `{
         "notification-system_internal_notification_model.Notification": {
             "type": "object",
             "required": [
+                "channels",
+                "created_by_id",
+                "created_by_name",
+                "created_date",
+                "maximum_retries",
+                "message",
+                "modified_by_id",
+                "modified_by_name",
+                "modified_date",
                 "notification_id",
+                "priority",
+                "send_at",
+                "type",
                 "user_id"
             ],
             "properties": {
@@ -352,7 +403,14 @@ const docTemplate = `{
         "notification-system_internal_userpreference_model.UserPreference": {
             "type": "object",
             "required": [
-                "user_id"
+                "created_by_id",
+                "created_by_name",
+                "created_date",
+                "modified_by_id",
+                "modified_by_name",
+                "modified_date",
+                "user_id",
+                "user_preference_id"
             ],
             "properties": {
                 "created_by_id": {
@@ -380,9 +438,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_preference_id": {
-                    "type": "string"
-                },
-                "version": {
                     "type": "string"
                 }
             }
