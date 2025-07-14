@@ -6,6 +6,8 @@ import (
 	"notification-system/internal/notification/service"
 	"notification-system/internal/validation"
 	"time"
+	"log"
+	"strings"
 )
 
 type NotificationHandler struct {
@@ -59,12 +61,29 @@ func (h *NotificationHandler) CreateNotification(c *fiber.Ctx) error {
 	}
 
 	// Save to DB
-	err := h.svc.CreateNotification(c.Context(), &req)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "could not create notification"})
-	}
+	// err := h.svc.CreateNotification(c.Context(), &req)
+	// if err != nil {
+	// 	log.Println("⚠️ CreateNotification failed:", err.Error())
+	// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "could not create notification"})
+	// }
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "notification created"})
+	// return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "notification created"})
+
+	if err := h.svc.CreateNotification(c.Context(), &req); err != nil {
+		log.Println("⚠️ CreateNotification failed:", err.Error())
+	
+		if strings.Contains(err.Error(), "duplicate") {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "duplicate entry",
+			})
+		}
+	
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "scheduler failed while creating notification",
+		})
+	}
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "notification created and entered to scheduler"})
+
 }
 
 // Dummy godoc
