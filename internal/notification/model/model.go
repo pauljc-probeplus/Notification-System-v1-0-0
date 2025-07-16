@@ -17,10 +17,10 @@ type Notification struct {
 	MaximumRetries   string    `bson:"maximum_retries" json:"maximum_retries" validate:"required"`
 	// CreatedDate is the time the notification was created
 	// example: 2025-07-08T14:00:00Z
-	CreatedDate      string   `json:"created_date" bson:"created_date" validate:"required,datetime=2006-01-02T15:04:05Z07:00"`
+	CreatedDate      string   `json:"created_date" bson:"created_date" validate:"required"`
 	CreatedByName    string   `json:"created_by_name" bson:"created_by_name" validate:"required"`
 	CreatedByID      string   `json:"created_by_id" bson:"created_by_id" validate:"required"`
-	ModifiedDate     string   `json:"modified_date" bson:"modified_date" validate:"required,datetime=2006-01-02T15:04:05Z07:00"`
+	ModifiedDate     string   `json:"modified_date" bson:"modified_date" validate:"required"`
 	ModifiedByName   string   `json:"modified_by_name" bson:"modified_by_name" validate:"required"`
 	ModifiedByID     string   `json:"modified_by_id" bson:"modified_by_id" validate:"required"`
 }

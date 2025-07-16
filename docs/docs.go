@@ -360,9 +360,6 @@ const docTemplate = `{
                 },
                 "start_time": {
                     "type": "string"
-                },
-                "time_zone": {
-                    "type": "string"
                 }
             }
         },
@@ -376,9 +373,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "start_date_time": {
-                    "type": "string"
-                },
-                "time_zone": {
                     "type": "string"
                 }
             }

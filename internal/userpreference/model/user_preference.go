@@ -5,10 +5,10 @@ type UserPreference struct {
 	UserID           string     `json:"user_id" bson:"user_id"  validate:"required,user_id_format"`
 	Preferences      Preference `json:"preferences" bson:"preferences"`
 
-	CreatedDate      string   `json:"created_date" bson:"created_date" validate:"required,datetime=2006-01-02T15:04:05Z07:00"`
+	CreatedDate      string   `json:"created_date" bson:"created_date" validate:"required"`
 	CreatedByName    string   `json:"created_by_name" bson:"created_by_name" validate:"required"`
 	CreatedByID      string   `json:"created_by_id" bson:"created_by_id" validate:"required"`
-	ModifiedDate     string   `json:"modified_date" bson:"modified_date" validate:"required,datetime=2006-01-02T15:04:05Z07:00"`
+	ModifiedDate     string   `json:"modified_date" bson:"modified_date" validate:"required"`
 	ModifiedByName   string   `json:"modified_by_name" bson:"modified_by_name" validate:"required"`
 	ModifiedByID     string   `json:"modified_by_id" bson:"modified_by_id" validate:"required"`
 }
@@ -30,7 +30,6 @@ type NoDisturb struct {
 	Enabled     bool   `json:"enabled" bson:"enabled"`
 	StartDateTime string `json:"start_date_time" bson:"start_date_time"`
 	EndDateTime   string `json:"end_date_time" bson:"end_date_time"`
-	TimeZone      string `json:"time_zone" bson:"time_zone"`
 }
 
 type DailyLimit struct {
@@ -42,5 +41,4 @@ type DeliveryTime struct {
 	Enabled    bool   `json:"enabled" bson:"enabled"`
 	StartTime  string `json:"start_time" bson:"start_time"`
 	EndTime    string `json:"end_time" bson:"end_time"`
-	TimeZone   string `json:"time_zone" bson:"time_zone"`
 }

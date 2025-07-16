@@ -354,9 +354,6 @@
                 },
                 "start_time": {
                     "type": "string"
-                },
-                "time_zone": {
-                    "type": "string"
                 }
             }
         },
@@ -370,9 +367,6 @@
                     "type": "string"
                 },
                 "start_date_time": {
-                    "type": "string"
-                },
-                "time_zone": {
                     "type": "string"
                 }
             }

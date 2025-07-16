@@ -35,7 +35,9 @@ func (h *UserPreferenceHandler) CreateUserPreference(c *fiber.Ctx) error {
 	}
 
 	// Apply default values
-	currentTime := time.Now().UTC().Format(time.RFC3339)
+	//currentTime := time.Now().UTC().Format(time.RFC3339)
+	loc, _ := time.LoadLocation("Asia/Kolkata")
+	currentTime := time.Now().In(loc).Format("2006-01-02T15:04:05")
 	pref.CreatedDate = currentTime
 	pref.ModifiedDate = currentTime
 	pref.CreatedByName = pref.UserID

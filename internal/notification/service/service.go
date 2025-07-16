@@ -17,7 +17,7 @@ import (
 )
 
 type NotificationService interface {
-	CreateNotification(ctx context.Context, n *model.Notification) error
+	CreateNotification(ctx context.Context, n *model.Notification) (bool,error)
 }
 
 type notificationService struct {
@@ -38,10 +38,10 @@ func NewNotificationService(
 	}
 }
 
-func (s *notificationService) handleScheduling(ctx context.Context, n *model.Notification, pref *upref_model.UserPreference) error {
+func (s *notificationService) handleScheduling(ctx context.Context, n *model.Notification, pref *upref_model.UserPreference) (bool,error) {
 	//Logic from docx
 	if pref.Preferences.NoDisturb.Enabled {
-		return nil // placeholder
+		return false,nil // placeholder
 	}else{
 		
 		switch n.Type{
@@ -58,7 +58,7 @@ func (s *notificationService) handleScheduling(ctx context.Context, n *model.Not
 				entry.Topic = topic// reset per channel
 
 				if err := s.schedulerService.CreateSchedulerEntry(ctx, entry); err != nil {
-					return err // optionally log and continue instead of returning immediately
+					return false,err // optionally log and continue instead of returning immediately
 				}
 			}
 		case "system_alert":
@@ -74,199 +74,96 @@ func (s *notificationService) handleScheduling(ctx context.Context, n *model.Not
 				entry.Topic = topic// reset per channel
 
 				if err := s.schedulerService.CreateSchedulerEntry(ctx, entry); err != nil {
-					return err // optionally log and continue instead of returning immediately
+					return false,err // optionally log and continue instead of returning immediately
 				}
 			}
 		case "promotional":
-			// TODO: Handle promotional-specific logic like limits and delivery window
-			
-			//layout := "2006-01-02T15:04:05"
-			layout:=time.RFC3339
+			layout := "2006-01-02T15:04:05"
 			sendAtTime, err := time.Parse(layout, n.SendAt)
 			if err != nil {
-				return fmt.Errorf("invalid SendAt format: %v", err)
+				return false,fmt.Errorf("invalid SendAt format: %v", err)
 			}
-
+		
 			createdTime, err := time.Parse(layout, n.CreatedDate)
 			if err != nil {
-				return fmt.Errorf("invalid CreatedDate format: %v", err)
+				return false,fmt.Errorf("invalid CreatedDate format: %v", err)
 			}
-			if sendAtTime.Sub(createdTime) >= 24*time.Hour {
-				// SendAt is 24+ hours after creation, push to DLQ
-				return nil
-			}else{
-				entry := &sched_model.SchedulerEntry{
-					NotificationID: n.NotificationID,
-					UserId:         n.UserId,
-					Message:        n.Message,
-					Status:         "pending",
-				}
-
-				//Parse StartTime and EndTime (only time)
-				timeLayout := "15:04"
-				startT, err := time.Parse(timeLayout, pref.Preferences.DeliveryTiming.StartTime)
-				if err != nil {
-					return fmt.Errorf("invalid start time format: %v", err)
-				}
-
-				endT, err := time.Parse(timeLayout, pref.Preferences.DeliveryTiming.EndTime)
-				if err != nil {
-					return fmt.Errorf("invalid end time format: %v", err)
-				}
-
-				// Create full time.Time values for comparison on same day as SendAt
-				deliveryStart := time.Date(sendAtTime.Year(), sendAtTime.Month(), sendAtTime.Day(),
-				startT.Hour(), startT.Minute(), 0, 0, sendAtTime.Location())
-
-				deliveryEnd := time.Date(sendAtTime.Year(), sendAtTime.Month(), sendAtTime.Day(),
-				endT.Hour(), endT.Minute(), 0, 0, sendAtTime.Location())
-
-				//Compare and adjust SendAt if necessary
-				if sendAtTime.Before(deliveryStart) || sendAtTime.After(deliveryEnd) {
-					// Outside preferred delivery window
-					// Reschedule to next day at delivery start time
-					nextDay := sendAtTime.AddDate(0, 0, 1)
-					sendAtTime = time.Date(nextDay.Year(), nextDay.Month(), nextDay.Day(),
-						startT.Hour(), startT.Minute(), 0, 0, nextDay.Location())
-				}
-					
-				//Final Step: Convert back to string (if needed)
-				entry.SendAt = sendAtTime.Format(layout)
-
-				for _, channel := range pref.Preferences.Channels.Promotional {
-					topic := "lowPriority." + channel
-					entry.Topic = topic// reset per channel
 		
+			if sendAtTime.Sub(createdTime) >= 24*time.Hour {
+				// Over 24 hours – drop it
+				return false,nil
+			}
+		
+			// Prepare base entry
+			entry := &sched_model.SchedulerEntry{
+				NotificationID: n.NotificationID,
+				UserId:         n.UserId,
+				Message:        n.Message,
+				Status:         "pending",
+			}
+		
+			// Parse start and end times (only time of day)
+			timeLayout := "15:04"
+			startT, err := time.Parse(timeLayout, pref.Preferences.DeliveryTiming.StartTime)
+			if err != nil {
+				return false,fmt.Errorf("invalid start time format: %v", err)
+			}
+		
+			endT, err := time.Parse(timeLayout, pref.Preferences.DeliveryTiming.EndTime)
+			if err != nil {
+				return false,fmt.Errorf("invalid end time format: %v", err)
+			}
+		
+			// Construct time ranges on same day
+			deliveryStart := time.Date(sendAtTime.Year(), sendAtTime.Month(), sendAtTime.Day(),
+				startT.Hour(), startT.Minute(), 0, 0, sendAtTime.Location())
+			deliveryEnd := time.Date(sendAtTime.Year(), sendAtTime.Month(), sendAtTime.Day(),
+				endT.Hour(), endT.Minute(), 0, 0, sendAtTime.Location())
+		
+			// Adjust SendAt if needed
+			if sendAtTime.Before(deliveryStart) {
+				sendAtTime = deliveryStart
+			} else if sendAtTime.After(deliveryEnd) {
+				// Drop notification (outside delivery window)
+				return false,nil
+			}
+		
+			// Set final SendAt
+			entry.SendAt = sendAtTime.Format(layout)
+
+			// Step 1: Convert notification channels to a map
+			requested := make(map[string]bool)
+			for _, ch := range n.Channels {
+				requested[ch] = true
+			}
+		
+			for _, channel := range pref.Preferences.Channels.Promotional {
+				if(requested[channel]){
+					entry.Topic = "lowPriority." + channel
 					if err := s.schedulerService.CreateSchedulerEntry(ctx, entry); err != nil {
-						return err // optionally log and continue instead of returning immediately
+						return false,err
 					}
 				}
 			}
 		}
 	}
-	return nil
+	return true,nil
 }
 
 
-func (s *notificationService) CreateNotification(ctx context.Context, n *model.Notification) error {
+func (s *notificationService) CreateNotification(ctx context.Context, n *model.Notification) (bool,error) {
 	// TODO: Add business logic for DND, limits, etc later
 
 	// Step 1: Persist notification
 	if err := s.repo.Create(ctx, n); err != nil {
-		return err
+		return false,err
 	}
 
 	// Step 2: Fetch user preferences
 	pref, err := s.userPrefService.GetUserPreference(ctx, n.UserId)
 	if err != nil {
-		return err // optionally return specific error if not found
+		return false,err // optionally return specific error if not found
 	}
-
-	//Logic from docx
-	// if pref.Preferences.NoDisturb.Enabled {
-	// 	return nil // placeholder
-	// }else{
-		
-	// 	switch n.Type{
-	// 	case "transactional":
-	// 		entry := &sched_model.SchedulerEntry{
-	// 			NotificationID: n.NotificationID,
-	// 			UserId:         n.UserId,
-	// 			Message:        n.Message,
-	// 			SendAt:         n.SendAt,
-	// 			Status:         "pending",
-	// 		}
-	// 		for _, channel := range pref.Preferences.Channels.Transactional {
-	// 			topic := "highPriority." + channel
-	// 			entry.Topic = topic// reset per channel
-	
-	// 			if err := s.schedulerService.CreateSchedulerEntry(ctx, entry); err != nil {
-	// 				return err // optionally log and continue instead of returning immediately
-	// 			}
-	// 		}
-	// 	case "system_alert":
-	// 		entry := &sched_model.SchedulerEntry{
-	// 			NotificationID: n.NotificationID,
-	// 			UserId:         n.UserId,
-	// 			Message:        n.Message,
-	// 			SendAt:         n.SendAt,
-	// 			Status:         "pending",
-	// 		}
-	// 		for _, channel := range pref.Preferences.Channels.SystemAlerts {
-	// 			topic := "highPriority." + channel
-	// 			entry.Topic = topic// reset per channel
-	
-	// 			if err := s.schedulerService.CreateSchedulerEntry(ctx, entry); err != nil {
-	// 				return err // optionally log and continue instead of returning immediately
-	// 			}
-	// 		}
-	// 	case "promotional":
-	// 		// TODO: Handle promotional-specific logic like limits and delivery window
-			
-	// 		layout := "2006-01-02T15:04:05"
-	// 		sendAtTime, err := time.Parse(layout, n.SendAt)
-	// 		if err != nil {
-	// 			return fmt.Errorf("invalid SendAt format: %v", err)
-	// 		}
-
-	// 		createdTime, err := time.Parse(layout, n.CreatedDate)
-	// 		if err != nil {
-	// 			return fmt.Errorf("invalid CreatedDate format: %v", err)
-	// 		}
-	// 		if sendAtTime.Sub(createdTime) >= 24*time.Hour {
-	// 			// SendAt is 24+ hours after creation, push to DLQ
-	// 			return nil
-	// 		}else{
-	// 			entry := &sched_model.SchedulerEntry{
-	// 				NotificationID: n.NotificationID,
-	// 				UserId:         n.UserId,
-	// 				Message:        n.Message,
-	// 				Status:         "pending",
-	// 			}
-
-	// 			//Parse StartTime and EndTime (only time)
-	// 			timeLayout := "15:04"
-	// 			startT, err := time.Parse(timeLayout, pref.Preferences.DeliveryTiming.StartTime)
-	// 			if err != nil {
-	// 				return fmt.Errorf("invalid start time format: %v", err)
-	// 			}
-
-	// 			endT, err := time.Parse(timeLayout, pref.Preferences.DeliveryTiming.EndTime)
-	// 			if err != nil {
-	// 				return fmt.Errorf("invalid end time format: %v", err)
-	// 			}
-
-	// 			// Create full time.Time values for comparison on same day as SendAt
-	// 			deliveryStart := time.Date(sendAtTime.Year(), sendAtTime.Month(), sendAtTime.Day(),
-	// 			startT.Hour(), startT.Minute(), 0, 0, sendAtTime.Location())
-
-	// 			deliveryEnd := time.Date(sendAtTime.Year(), sendAtTime.Month(), sendAtTime.Day(),
-	// 			endT.Hour(), endT.Minute(), 0, 0, sendAtTime.Location())
-
-	// 			//Compare and adjust SendAt if necessary
-	// 			if sendAtTime.Before(deliveryStart) || sendAtTime.After(deliveryEnd) {
-	// 				// Outside preferred delivery window
-	// 				// Reschedule to next day at delivery start time
-	// 				nextDay := sendAtTime.AddDate(0, 0, 1)
-	// 				sendAtTime = time.Date(nextDay.Year(), nextDay.Month(), nextDay.Day(),
-	// 					startT.Hour(), startT.Minute(), 0, 0, nextDay.Location())
-	// 			}
-					
-	// 			//Final Step: Convert back to string (if needed)
-	// 			entry.SendAt = sendAtTime.Format(layout)
-
-	// 			for _, channel := range pref.Preferences.Channels.Promotional {
-	// 				topic := "lowPriority." + channel
-	// 				entry.Topic = topic// reset per channel
-		
-	// 				if err := s.schedulerService.CreateSchedulerEntry(ctx, entry); err != nil {
-	// 					return err // optionally log and continue instead of returning immediately
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
-	// return nil
 	
 	// Step 3: Apply logic to schedule or delay
 	return s.handleScheduling(ctx, n, pref)

@@ -47,7 +47,8 @@ func (h *NotificationHandler) CreateNotification(c *fiber.Ctx) error {
 	}
 
 	// Apply default values
-	currentTime := time.Now().UTC().Format(time.RFC3339)
+	loc, _ := time.LoadLocation("Asia/Kolkata")
+	currentTime := time.Now().In(loc).Format("2006-01-02T15:04:05")
 	req.CreatedDate = currentTime
 	req.ModifiedDate = currentTime
 	req.CreatedByName = req.UserId
@@ -69,20 +70,47 @@ func (h *NotificationHandler) CreateNotification(c *fiber.Ctx) error {
 
 	// return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "notification created"})
 
-	if err := h.svc.CreateNotification(c.Context(), &req); err != nil {
-		log.Println("⚠️ CreateNotification failed:", err.Error())
+	//below is the code befoe error msg handling
+	// if err := h.svc.CreateNotification(c.Context(), &req); err != nil {
+	// 	log.Println("⚠️ CreateNotification failed:", err.Error())
 	
+	// 	if strings.Contains(err.Error(), "duplicate") {
+	// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	// 			"error": "duplicate entry",
+	// 		})
+	// 	}
+	
+	// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+	// 		"error": "scheduler failed while creating notification",
+	// 	})
+	// }
+	// return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "notification created and entered to scheduler"})
+
+	wasScheduled, err := h.svc.CreateNotification(c.Context(), &req)
+	if err != nil {
+		log.Println("⚠️ CreateNotification failed:", err.Error())
+
 		if strings.Contains(err.Error(), "duplicate") {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "duplicate entry",
 			})
 		}
-	
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "scheduler failed while creating notification",
 		})
 	}
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "notification created and entered to scheduler"})
+
+	msg := "notification created"
+	if wasScheduled {
+		msg += " and entered to scheduler"
+	} else {
+		msg += " but not scheduled"
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": msg})
+
+
 
 }
 

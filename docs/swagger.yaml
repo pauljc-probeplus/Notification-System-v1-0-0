@@ -87,8 +87,6 @@ definitions:
         type: string
       start_time:
         type: string
-      time_zone:
-        type: string
     type: object
   notification-system_internal_userpreference_model.NoDisturb:
     properties:
@@ -97,8 +95,6 @@ definitions:
       end_date_time:
         type: string
       start_date_time:
-        type: string
-      time_zone:
         type: string
     type: object
   notification-system_internal_userpreference_model.Preference:
