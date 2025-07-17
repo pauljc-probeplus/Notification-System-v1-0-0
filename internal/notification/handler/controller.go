@@ -5,9 +5,10 @@ import (
 	"notification-system/internal/notification/model"
 	"notification-system/internal/notification/service"
 	"notification-system/internal/validation"
-	"time"
+	//"time"
 	"log"
 	"strings"
+	"notification-system/internal/common/timeutil"
 )
 
 type NotificationHandler struct {
@@ -47,10 +48,17 @@ func (h *NotificationHandler) CreateNotification(c *fiber.Ctx) error {
 	}
 
 	// Apply default values
-	loc, _ := time.LoadLocation("Asia/Kolkata")
+	/*loc, _ := time.LoadLocation("Asia/Kolkata")
 	currentTime := time.Now().In(loc).Format("2006-01-02T15:04:05")
 	req.CreatedDate = currentTime
 	req.ModifiedDate = currentTime
+	req.CreatedByName = req.UserId
+	req.CreatedByID = req.UserId
+	req.ModifiedByName = req.UserId
+	req.ModifiedByID = req.UserId*/
+
+	req.CreatedDate = timeutil.NowISTFormatted()
+	req.ModifiedDate = timeutil.NowISTFormatted()
 	req.CreatedByName = req.UserId
 	req.CreatedByID = req.UserId
 	req.ModifiedByName = req.UserId

@@ -11,11 +11,17 @@ import (
 	
 	"github.com/google/uuid"
 
+	"notification-system/internal/common/timeutil"
+
 	"time"
 	"fmt"
+	"sync/atomic"
 
 	
 )
+
+var schedulerCounter uint64 //  global atomic counter for schedulerEntryId
+
 
 type NotificationService interface {
 	CreateNotification(ctx context.Context, n *model.Notification) (bool,error)
@@ -50,14 +56,27 @@ func (s *notificationService) handleScheduling(ctx context.Context, n *model.Not
 		case "transactional":
 			entry := &sched_model.SchedulerEntry{
 				NotificationID: n.NotificationID,
+				NotificationType: n.Type,
 				UserId:         n.UserId,
 				Message:        n.Message,
 				SendAt:         n.SendAt,
+				MaximumRetries: n.MaximumRetries,
 				Status:         "pending",
+				CreatedByName: n.CreatedByName,
+				CreatedById: n.CreatedByID,
+				ModifiedByName: n.ModifiedByName,
+				ModifiedById: n.ModifiedByID,
+				
 			}
 			for _, channel := range n.Channels {
 				topic := "highPriority." + channel
 				entry.Topic = topic// reset per channel
+
+				entry.SchedulerEntryID = generateSchedulerEntryID() //setting schedulerEntryId 
+
+				entry.CreatedDate = timeutil.NowISTFormatted()
+				entry.ModifiedDate = timeutil.NowISTFormatted()
+
 
 				if err := s.schedulerService.CreateSchedulerEntry(ctx, entry); err != nil {
 					s.logSchedulerFailure(ctx, n, err)
@@ -67,14 +86,26 @@ func (s *notificationService) handleScheduling(ctx context.Context, n *model.Not
 		case "system_alert":
 			entry := &sched_model.SchedulerEntry{
 				NotificationID: n.NotificationID,
+				NotificationType: n.Type,
 				UserId:         n.UserId,
 				Message:        n.Message,
 				SendAt:         n.SendAt,
+				MaximumRetries: n.MaximumRetries,
 				Status:         "pending",
+				CreatedByName: n.CreatedByName,
+				CreatedById: n.CreatedByID,
+				ModifiedByName: n.ModifiedByName,
+				ModifiedById: n.ModifiedByID,
 			}
 			for _, channel := range pref.Preferences.Channels.SystemAlerts {
 				topic := "highPriority." + channel
 				entry.Topic = topic// reset per channel
+
+				entry.SchedulerEntryID = generateSchedulerEntryID() //setting schedulerEntryId 
+
+				entry.CreatedDate = timeutil.NowISTFormatted()
+				entry.ModifiedDate = timeutil.NowISTFormatted()
+
 
 				if err := s.schedulerService.CreateSchedulerEntry(ctx, entry); err != nil {
 					s.logSchedulerFailure(ctx, n, err)
@@ -102,9 +133,17 @@ func (s *notificationService) handleScheduling(ctx context.Context, n *model.Not
 			// Prepare base entry
 			entry := &sched_model.SchedulerEntry{
 				NotificationID: n.NotificationID,
+				NotificationType: n.Type,
 				UserId:         n.UserId,
 				Message:        n.Message,
+				SendAt:         n.SendAt,
+				MaximumRetries: n.MaximumRetries,
 				Status:         "pending",
+				CreatedByName: n.CreatedByName,
+				CreatedById: n.CreatedByID,
+				ModifiedByName: n.ModifiedByName,
+				ModifiedById: n.ModifiedByID,
+				
 			}
 		
 			// Parse start and end times (only time of day)
@@ -146,6 +185,12 @@ func (s *notificationService) handleScheduling(ctx context.Context, n *model.Not
 			for _, channel := range pref.Preferences.Channels.Promotional {
 				if(requested[channel]){
 					entry.Topic = "lowPriority." + channel
+
+					entry.SchedulerEntryID = generateSchedulerEntryID() //setting schedulerEntryId 
+
+					entry.CreatedDate = timeutil.NowISTFormatted()
+					entry.ModifiedDate = timeutil.NowISTFormatted()
+
 					if err := s.schedulerService.CreateSchedulerEntry(ctx, entry); err != nil {
 						return false,err
 					}
@@ -195,4 +240,11 @@ func (s *notificationService) CreateNotification(ctx context.Context, n *model.N
 	// Step 3: Apply logic to schedule or delay
 	return s.handleScheduling(ctx, n, pref)
 }
+
+//Function to set schedulerEntryId
+func generateSchedulerEntryID() string {
+	counter := atomic.AddUint64(&schedulerCounter, 1)
+	return fmt.Sprintf("schedentry-%03d", counter%1000)
+}
+
 

@@ -12,7 +12,7 @@ type SchedulerEntry struct {
 	UserId         string `bson:"user_id" json:"user_id"`
 	Message string   `bson:"message" json:"message"` 
 	SendAt string   `bson:"send_at" json:"send_at"`
-	Priority string   `bson:"priority" json:"priority"` 
+	//Priority string   `bson:"priority" json:"priority"` 
 	MaximumRetries string   `bson:"maximum_retries" json:"maximum_retries"`
 	Attempts string   `bson:"attempts" json:"attempts"` 
 	Status         string    `json:"status"` // e.g., pending, sent, failed
