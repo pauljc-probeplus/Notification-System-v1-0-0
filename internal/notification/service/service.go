@@ -9,6 +9,7 @@ import (
 	sched_model "notification-system/internal/scheduler/model"
 	sched_svc "notification-system/internal/scheduler/service"
 	
+	"github.com/google/uuid"
 
 	"time"
 	"fmt"
@@ -41,6 +42,7 @@ func NewNotificationService(
 func (s *notificationService) handleScheduling(ctx context.Context, n *model.Notification, pref *upref_model.UserPreference) (bool,error) {
 	//Logic from docx
 	if pref.Preferences.NoDisturb.Enabled {
+		s.logSchedulerFailure(ctx, n, fmt.Errorf("notification unscheduled as DoNotDisturb was set to true"))
 		return false,nil // placeholder
 	}else{
 		
@@ -58,6 +60,7 @@ func (s *notificationService) handleScheduling(ctx context.Context, n *model.Not
 				entry.Topic = topic// reset per channel
 
 				if err := s.schedulerService.CreateSchedulerEntry(ctx, entry); err != nil {
+					s.logSchedulerFailure(ctx, n, err)
 					return false,err // optionally log and continue instead of returning immediately
 				}
 			}
@@ -74,6 +77,7 @@ func (s *notificationService) handleScheduling(ctx context.Context, n *model.Not
 				entry.Topic = topic// reset per channel
 
 				if err := s.schedulerService.CreateSchedulerEntry(ctx, entry); err != nil {
+					s.logSchedulerFailure(ctx, n, err)
 					return false,err // optionally log and continue instead of returning immediately
 				}
 			}
@@ -91,6 +95,7 @@ func (s *notificationService) handleScheduling(ctx context.Context, n *model.Not
 		
 			if sendAtTime.Sub(createdTime) >= 24*time.Hour {
 				// Over 24 hours – drop it
+				s.logSchedulerFailure(ctx, n, fmt.Errorf("SendAt is more than 24 hours after CreatedDate"))
 				return false,nil
 			}
 		
@@ -125,6 +130,7 @@ func (s *notificationService) handleScheduling(ctx context.Context, n *model.Not
 				sendAtTime = deliveryStart
 			} else if sendAtTime.After(deliveryEnd) {
 				// Drop notification (outside delivery window)
+				s.logSchedulerFailure(ctx, n, fmt.Errorf("SendAt (%s) is after delivery window end (%s)", sendAtTime.Format(layout), deliveryEnd.Format(layout)))
 				return false,nil
 			}
 		
@@ -149,6 +155,27 @@ func (s *notificationService) handleScheduling(ctx context.Context, n *model.Not
 	}
 	return true,nil
 }
+
+// function to log failed scheduling
+func (s *notificationService) logSchedulerFailure(ctx context.Context, n *model.Notification, err error) {
+	if err == nil {
+		err = fmt.Errorf("unknown scheduler failure occurred")
+	}
+	log := &sched_model.FailureLog{
+		LogID:          uuid.NewString(),
+		NotificationID: n.NotificationID,
+		UserID:         n.UserId,
+		Type:           n.Type,
+		Message:        n.Message,
+		FailureReason:  err.Error(),
+		Timestamp:      time.Now().Format("2006-01-02T15:04:05"),
+	}
+
+	// Log the failure (fire and forget)
+	_ = s.schedulerService.LogFailure(ctx,log)
+}
+
+
 
 
 func (s *notificationService) CreateNotification(ctx context.Context, n *model.Notification) (bool,error) {
