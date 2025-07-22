@@ -17,6 +17,7 @@ import (
 	"notification-system/internal/notification/route"
 
 	userpreference "notification-system/internal/userpreference/routes"
+	scheduler "notification-system/internal/scheduler/route"
 
 	"notification-system/internal/validation"
 
@@ -55,6 +56,10 @@ func main() {
 	
 	route.RegisterRoutes(api, db)
 	userpreference.RegisterRoutes(api,db)
+	scheduler.RegisterSchedulerRoutes(api, db)
+	
+	
+	
 	app.Get("/ping", Ping)
 
 
